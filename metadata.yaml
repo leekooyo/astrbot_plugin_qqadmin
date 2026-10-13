@@ -4,7 +4,7 @@ desc: "[仅aiocqhttp]群管插件，功能包括：禁言、全体禁言、踢�
 help: 略
 version: v3.4.0
 author: Zhalslar
-repo: https://github.com/Zhalslar/astrbot_plugin_qqadmin
+repo: https://github.com/leekooyo/astrbot_plugin_qqadmin
 support_platforms:
   - aiocqhttp
 astrbot_version: ">=4.24.2"
