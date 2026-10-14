@@ -375,13 +375,13 @@ class QQAdminPlugin(Star):
         await self.join.handle_block_ids(event)
 
     @filter.command("批准", alias={"同意进群"})
-    @perm_required(PermLevel.ADMIN, perm_key="approve")
+    @perm_required(PermLevel.ADMIN, perm_key="approve", allow_private_admin=True)
     async def agree_add_group(self, event: AiocqhttpMessageEvent, extra: str = ""):
         "批准进群申请"
         await self.join.agree_add_group(event, extra)
 
     @filter.command("驳回", alias={"拒绝进群", "不批准"})
-    @perm_required(PermLevel.ADMIN, perm_key="approve")
+    @perm_required(PermLevel.ADMIN, perm_key="approve", allow_private_admin=True)
     async def refuse_add_group(self, event: AiocqhttpMessageEvent, extra: str = ""):
         "驳回进群申请"
         await self.join.refuse_add_group(event, extra)
@@ -397,7 +397,7 @@ class QQAdminPlugin(Star):
     @filter.command("进群欢迎")
     @perm_required(PermLevel.MEMBER, perm_key="welcome")
     async def handle_join_welcome(self, event: AiocqhttpMessageEvent):
-        "进群欢迎 <欢迎语>"
+        "进群欢迎 <欢迎语|清空>；清空可关闭欢迎语"
         await self.join.handle_join_welcome(event)
 
     @filter.command("退群通知")

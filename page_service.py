@@ -225,8 +225,6 @@ class QQAdminPageService:
         }
         self._merge_dict(self.cfg.default, default_updates)
 
-        if "admin_audit" in updated:
-            self.cfg.admin_audit = updated["admin_audit"]
         if "random_ban_time" in updated:
             self.cfg.random_ban_time = updated["random_ban_time"]
         if "vote_ban" in updated:
@@ -243,7 +241,6 @@ class QQAdminPageService:
 
     def _get_group_overlay_schema(self) -> dict[str, Any]:
         keys = [
-            "admin_audit",
             "random_ban_time",
             "vote_ban",
             "llm_get_msg_count",

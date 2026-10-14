@@ -17,6 +17,14 @@ class JoinHandle:
         self._fail: dict[str, int] = {}
 
     async def _send_admin(self, client: CQHttp, message: str):
+        target = self.cfg.raw_data().get("notify_target", "admin_private")
+        review_group = str(self.cfg.raw_data().get("review_group_id", "")).strip()
+        if target == "review_group" and review_group.isdigit():
+            try:
+                await client.send_group_msg(group_id=int(review_group), message=message)
+            except Exception as e:
+                logger.error(f"无法发送消息给审核群：{e}")
+            return
         for admin_id in self.cfg.admins_id:
             try:
                 await client.send_private_msg(user_id=int(admin_id), message=message)
@@ -157,7 +165,15 @@ class JoinHandle:
         gid = event.get_group_id()
         raw = event.message_str.partition(" ")[2]
 
-        if raw:
+        if raw in ("清空", "关闭"):
+            await self.db.set(gid, "join_welcome", "")
+            await event.send(event.plain_result("已关闭本群进群欢迎语"))
+        elif raw:
+            try:
+                raw.format(nickname="示例昵称")
+            except (KeyError, ValueError, IndexError):
+                await event.send(event.plain_result("欢迎语格式错误：仅支持 {nickname}，字面大括号请写 {{ 和 }}。"))
+                return
             await self.db.set(gid, "join_welcome", raw)
             await event.send(event.plain_result(f"本群进群欢迎语已设为：\n{raw}"))
         else:
@@ -261,10 +277,16 @@ class JoinHandle:
         ):
             # 进群审核总开关
             if not await self.db.get(gid, "join_switch"):
+                await self._send_admin(client,
+                    f"【进群申请待处理】群号：{gid}\n申请人：{uid}\nflag：{raw.get('flag', '')}\n本群自动审核已关闭")
                 return
             comment = raw.get("comment")
             flag = raw.get("flag", "")
-            info = await client.get_stranger_info(user_id=int(uid))
+            try:
+                info = await client.get_stranger_info(user_id=int(uid)) or {}
+            except Exception as e:
+                logger.warning(f"获取申请人资料失败：{e}")
+                info = {}
             nickname = info.get("nickname") or "未知昵称"
             if info.get("isHideQQLevel"):
                 level = None
@@ -286,18 +308,18 @@ class JoinHandle:
                         approve=approve,
                         reason="" if approve else reason,
                     )
-                    if not approve and reason == "黑名单用户":
-                        return
                     approve_msg = f"自动{'批准' if approve else '驳回'}：{reason}"
                 except Exception as e:
                     logger.warning(f"set_group_add_request failed: {e}")
+                    await self._send_admin(client,
+                        f"【进群申请处理失败】群号：{gid}\n申请人：{uid}\nflag：{flag}\n原因：{e}")
                     return
             else:
                 approve_msg = ""
 
             # 生成并发送通知
             tip = "批准/驳回：" if not approve_msg else ""
-            notice = f"【进群申请】{tip}\n昵称：{nickname}\nQQ：{uid}\nflag：{flag}"
+            notice = f"【进群申请】{tip}\n昵称：{nickname}\nQQ：{uid}\nflag：{flag}\n群号：{gid}"
             if level is not None:
                 notice += f"\n等级：{level}"
             if comment:
@@ -305,24 +327,22 @@ class JoinHandle:
             if approve_msg:
                 notice += f"\n{approve_msg}"
 
-            group_config = self.db.get_group_snapshot(gid)
-            if group_config.get("admin_audit", self.cfg.admin_audit):
-                await self._send_admin(client, notice)
-            else:
-                await event.send(event.plain_result(notice))
+            await self._send_admin(client, notice)
 
-        # 主动退群事件
+        # 成员主动退群；拉黑与群内通报互不依赖
         elif (
             raw.get("post_type") == "notice"
             and raw.get("notice_type") == "group_decrease"
             and raw.get("sub_type") == "leave"
         ):
-            if await self.db.get(gid, "leave_notify", False):
+            block = await self.db.get(gid, "leave_block", False)
+            notify = await self.db.get(gid, "leave_notify", False)
+            if block:
+                await self.db.add(gid, "block_ids", uid)
+            if notify:
                 nickname = await get_nickname(event, uid)
                 msg = f"{nickname}({uid}) 主动退群了"
-                # 退群拉黑
-                if await self.db.get(gid, "leave_block", False):
-                    await self.db.add(gid, "block_ids", uid)
+                if block:
                     msg += "，已拉黑"
                 await event.send(event.plain_result(msg))
 
@@ -332,8 +352,13 @@ class JoinHandle:
             join_welcome = await self.db.get(gid, "join_welcome")
             if join_welcome:
                 nickname = await get_nickname(event, uid)
-                welcome = join_welcome.format(nickname=nickname)
-                await event.send(event.plain_result(welcome))
+                try:
+                    welcome = join_welcome.format(nickname=nickname)
+                except (KeyError, ValueError, IndexError):
+                    logger.warning("进群欢迎语格式有误，仅支持 {nickname}")
+                    welcome = ""
+                if welcome:
+                    await event.send(event.plain_result(welcome))
             # 进群禁言
             join_ban_time = await self.db.get(gid, "join_ban_time")
             if join_ban_time > 0:
@@ -354,9 +379,12 @@ class JoinHandle:
         if not text:
             return "未引用任何【进群申请】"
         lines = text.split("\n")
-        if "【进群申请】" in text and len(lines) >= 4:
-            nickname = lines[1].split("：")[1]  # 第2行冒号后文本为nickname
-            flag = lines[3].split("：")[1]  # 第4行冒号后文本为flag
+        if "【进群申请】" in text:
+            fields = dict(line.split("：", 1) for line in lines if "：" in line)
+            nickname = fields.get("昵称", "申请人")
+            flag = fields.get("flag", "")
+            if not flag:
+                return "引用的申请通知缺少 flag，无法审批"
             try:
                 await event.bot.set_group_add_request(
                     flag=flag, sub_type="add", approve=approve, reason=extra

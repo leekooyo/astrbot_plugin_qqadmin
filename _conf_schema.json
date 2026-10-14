@@ -7,7 +7,7 @@
     "items": {
       "join_switch": {
         "description": "进群审核",
-        "hint": "开启后，进群退群模块的功能才会在当前群聊生效，群主、群管理可用命令 “进群审核 开/关” 为当前群聊设置",
+        "hint": "只控制本群的加群申请审核；进群欢迎、禁言和退群处理分别由各自配置控制。",
         "type": "bool",
         "default": true
       },
@@ -24,7 +24,7 @@
       },
       "join_max_time": {
         "description": "进群最大尝试次数",
-        "hint": "当用户申请进行的次数超过此值时，自动拒绝进群申请。可通过群内命令为当前群聊设置",
+        "hint": "同一用户在本群申请达到此次数且未命中白词时，自动拒绝并拉黑；0 表示不限制。计数在重启后清零。",
         "type": "int",
         "slider": {
           "min": 0,
@@ -71,7 +71,7 @@
       },
       "join_welcome": {
         "description": "进群欢迎词",
-        "hint": "发给新群友的欢迎词, 支持变量: {nickname}, 示例：欢迎{nickname}加入群聊",
+        "hint": "发给实际入群的新成员；只支持 {nickname}，用命令“进群欢迎 清空”关闭。",
         "type": "string",
         "default": ""
       },
@@ -137,11 +137,18 @@
       }
     }
   },
-  "admin_audit": {
-    "description": "进群事件仅通知bot管理员",
-    "hint": "如果开启，则进群事件仅通知bot管理员，不再将通知发送在对应群聊",
-    "type": "bool",
-    "default": false
+  "notify_target": {
+    "description": "进群申请通知渠道",
+    "hint": "admin_private：逐人私聊机器人管理员；review_group：发送到审核群。审核群号未配置时回退管理员私聊。",
+    "type": "string",
+    "options": ["admin_private", "review_group"],
+    "default": "admin_private"
+  },
+  "review_group_id": {
+    "description": "进群申请审核群号",
+    "hint": "仅在通知渠道为 review_group 时使用，填写纯数字 QQ 群号。",
+    "type": "string",
+    "default": ""
   },
   "random_ban_time": {
     "description": "随机禁言配置",

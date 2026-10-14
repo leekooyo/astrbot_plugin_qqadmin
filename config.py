@@ -115,7 +115,6 @@ class VoteBanConfig(ConfigNode):
 
 class PluginConfig(ConfigNode):
     default: dict
-    admin_audit: bool
     random_ban_time: str
     vote_ban: VoteBanConfig
     llm_get_msg_count: int
@@ -184,7 +183,6 @@ class PluginConfig(ConfigNode):
     def build_group_default_config(self) -> dict[str, Any]:
         return {
             **self.default,
-            "admin_audit": self.admin_audit,
             "random_ban_time": self.random_ban_time,
             "vote_ban": {
                 "ttl": self.vote_ban.ttl,

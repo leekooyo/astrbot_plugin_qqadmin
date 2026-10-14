@@ -169,6 +169,7 @@ def perm_required(
     bot_perm: PermLevel = PermLevel.ADMIN,
     perm_key: str | None = None,
     check_at: bool = True,
+    allow_private_admin: bool = False,
 ):
     """
     权限检查装饰器。
@@ -196,6 +197,15 @@ def perm_required(
 
             # 仅限群聊
             if event.is_private_chat():
+                admins = getattr(getattr(plugin_instance, "cfg", None), "admins_id", [])
+                if not (allow_private_admin and str(event.get_sender_id()) in admins):
+                    yield event.plain_result("此命令仅可在群聊使用，或由机器人管理员在私聊审批。")
+                    return
+                if inspect.isasyncgenfunction(func):
+                    async for item in func(plugin_instance, event, *args, **kwargs):
+                        yield item
+                else:
+                    await cast(Awaitable[Any], func(plugin_instance, event, *args, **kwargs))
                 return
 
             # 权限管理未初始化
