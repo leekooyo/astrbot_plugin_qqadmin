@@ -161,7 +161,19 @@ class NormalHandle:
         )
         if not essence_data:
             return "没有群精华消息"
-        return f"{essence_data}"
+        lines = [f"群精华消息 · 共 {len(essence_data)} 条"]
+        for index, item in enumerate(essence_data, 1):
+            if not isinstance(item, dict):
+                lines.append(f"{index}. 一条精华消息")
+                continue
+            sender = item.get("sender_nick") or item.get("sender_id") or "未知群友"
+            content = item.get("content") or item.get("msg_content") or ""
+            if isinstance(content, list):
+                content = "".join(str(part.get("data", {}).get("text", ""))
+                                  for part in content if isinstance(part, dict))
+            preview = " ".join(str(content).split())[:80] or "图片或其他内容"
+            lines.append(f"{index}. {sender}：{preview}")
+        return "\n".join(lines)
 
     async def set_group_portrait(
         self, event: AiocqhttpMessageEvent, image_url: str | None = None
