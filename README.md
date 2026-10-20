@@ -1,18 +1,17 @@
 
 <div align="center">
 
-![:name](https://count.getloli.com/@astrbot_plugin_QQAdmin?name=astrbot_plugin_QQAdmin&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
 # astrbot_plugin_qqadmin
+
 
 _✨ QQ群管插件 ✨_  
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![AstrBot](https://img.shields.io/badge/AstrBot-4.0%2B-orange.svg)](https://github.com/Soulter/AstrBot)
-[![GitHub](https://img.shields.io/badge/作者-Zhalslar-blue)](https://github.com/Zhalslar)
 
 </div>
+
+> 本仓库由 [leekooyo](https://github.com/leekooyo) 维护，基于 [Zhalslar 的原项目](https://github.com/Zhalslar/astrbot_plugin_qqadmin)；安装和更新请使用本仓库地址。原始基线见 [UPSTREAM.md](UPSTREAM.md)。
 
 ## 🤝 介绍
 
@@ -118,11 +117,8 @@ _✨ QQ群管插件 ✨_
 
 - 本插件目前仅测试了napcat协议端，其他协议端可能会存在一些不兼容问题（以具体情况为准）
 - 此维护版的问题请在本仓库提交 Issue。
-- 群管插件目前功能已基本稳定，建议非必要不更新
+- 更新前请备份群管配置，并在测试群核对权限、入群审核和通知目标。
 
-## 👥 贡献指南
+## 反馈与维护
 
-- 🌟 Star 这个项目！（点右上角的星星，感谢支持！）
-- 🐛 提交 Issue 报告问题
-- 💡 提出新功能建议
-- 🔧 提交 Pull Request 改进代码
+此维护版的问题和改进请在本仓库提交 Issue 或 Pull Request。上游版本会在核对差异后手动合并。
