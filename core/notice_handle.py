@@ -8,6 +8,10 @@ from astrbot.api import logger
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
     AiocqhttpMessageEvent,
 )
+from astrbot.core.utils.message_send_policy import (
+    SUPPRESSED_TOOL_RESULT,
+    should_suppress_event_send,
+)
 
 from ..config import PluginConfig
 from ..utils import download_file, extract_image_url
@@ -31,6 +35,9 @@ class NoticeHandle:
         content = content or event.message_str.partition(" ")[2]
         if not content:
             return "未指定群公告内容"
+        # 复读发送隔离：取消时返回统一文案，不发布公告、不停止事件
+        if should_suppress_event_send(event):
+            return SUPPRESSED_TOOL_RESULT
         gid = event.get_group_id()
         image_path = ""
         if image_url := (image_url or extract_image_url(chain=event.get_messages())):

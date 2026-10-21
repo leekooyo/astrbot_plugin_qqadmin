@@ -19,7 +19,9 @@ _✨ QQ 群管插件 ✨_
 
 ## 📦 安装
 
-在 AstrBot 中选择「通过仓库地址安装」，填写 `https://github.com/leekooyo/astrbot_plugin_qqadmin`。**当前版本：v3.4.2。** 元数据声明需要 AstrBot **4.24.2 或更高版本**及 `aiocqhttp` 平台。本仓库基于 [Zhalslar 原项目](https://github.com/Zhalslar/astrbot_plugin_qqadmin) 独立维护，维护差异见 [UPSTREAM.md](UPSTREAM.md)。使用前请确认机器人在 QQ 群中的管理权限；群号、申请记录及管理员配置属于本机运行数据，不要提交到仓库。
+在 AstrBot 中选择「通过仓库地址安装」，填写 `https://github.com/leekooyo/astrbot_plugin_qqadmin`。**当前版本：v3.4.3。** 元数据声明需要 AstrBot **4.24.2 或更高版本**及 `aiocqhttp` 平台。本仓库基于 [Zhalslar 原项目](https://github.com/Zhalslar/astrbot_plugin_qqadmin) 独立维护，维护差异见 [UPSTREAM.md](UPSTREAM.md)。使用前请确认机器人在 QQ 群中的管理权限；群号、申请记录及管理员配置属于本机运行数据，不要提交到仓库。
+
+> 此维护版的群公告发送隔离依赖本机 AstrBot 核心提供 `astrbot.core.utils.message_send_policy`。安装到未接入该模块的 AstrBot 核心会导致插件导入失败；更新核心前请先核对此依赖。
 
 ## ⌨️ 使用说明
 
